@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpbDotNetCore5", "SpbDotNetCore5\SpbDotNetCore5.csproj", "{450246DD-80AE-4F6B-AF17-F82EB6E63513}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{F6E0836A-DAA7-4B6B-ADCD-D725801A0773}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{450246DD-80AE-4F6B-AF17-F82EB6E63513}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{450246DD-80AE-4F6B-AF17-F82EB6E63513}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{450246DD-80AE-4F6B-AF17-F82EB6E63513}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{450246DD-80AE-4F6B-AF17-F82EB6E63513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6E0836A-DAA7-4B6B-ADCD-D725801A0773}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6E0836A-DAA7-4B6B-ADCD-D725801A0773}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6E0836A-DAA7-4B6B-ADCD-D725801A0773}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6E0836A-DAA7-4B6B-ADCD-D725801A0773}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

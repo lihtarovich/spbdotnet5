@@ -1,0 +1,5 @@
+Package: spbdotnetcore5
+Version: 1.0
+Maintainer: Kirill Likhtarovich
+Architecture: all
+Description: This package contains .net 5 test project

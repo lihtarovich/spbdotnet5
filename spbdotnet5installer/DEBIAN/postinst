@@ -1,0 +1,87 @@
+#!/bin/sh
+
+case "$1" in 
+     configure)
+
+   # Make sure the administrative user exists
+    if ! getent passwd spbdotnet5 > /dev/null; then
+        adduser --system $quiet --home /home/spbdotnet5 --no-create-home \
+            --shell /bin/bash --group --gecos "SpbDotNet test user" spbdotnet5
+    fi
+    # if the user was created manually, make sure the group is there as well
+    if ! getent group spbdotnet5 > /dev/null; then
+        addgroup --system $quiet spbdotnet5
+    fi
+    # make sure spbdotnet5 is in the spbdotnet5 group
+    if ! id -Gn spbdotnet5 | grep -qw spbdotnet5; then
+        adduser $quiet spbdotnet5 spbdotnet5
+    fi
+
+    # check validity of spbdotnet5 user and group
+    if [ "`id -u spbdotnet5`" -eq 0 ]; then
+        echo "The spbdotnet5 system user must not have uid 0 (root).
+Please fix this and reinstall this package." >&2
+        exit 1
+    fi
+    if [ "`id -g spbdotnet5`" -eq 0 ]; then
+        echo "The spbdotnet5 system user must not have root as primary group.
+Please fix this and reinstall this package." >&2
+        exit 1
+    fi
+
+    # ensure home directory ownership
+    if [ ! -d "/home/spbdotnet5" ]
+    then
+        mkdir -p /home/spbdotnet5
+    fi
+    su -s /bin/sh spbdotnet5 -c "test -O /home/spbdotnet5 &&
+            test -G /home/spbdotnet5" || \
+        chown spbdotnet5:spbdotnet5 /home/spbdotnet5
+        
+    #ensure log directory ownership    
+    if [ ! -d "/var/log/spbdotnet5" ]
+    then
+        mkdir -p /var/log/spbdotnet5
+    fi
+    su -s /bin/sh spbdotnet5 -c "test -O /var/log/spbdotnet5 &&
+            test -G /var/log/spbdotnet5" || \
+        chown spbdotnet5:spbdotnet5 /var/log/spbdotnet5   
+
+
+#Create service description file
+if [ -f /lib/systemd/system/spbdotnet5.service ]; then
+    sudo rm /lib/systemd/system/spbdotnet5.service
+fi
+
+cat >/lib/systemd/system/spbdotnet5.service <<EOL
+[Unit]
+Description=spbdotnet5 v1.0
+
+[Service]
+WorkingDirectory=/usr/bin/spbdotnet5.service
+ExecStart=/usr/bin/spbdotnet5.service/SpbDotNetCore5
+Restart=always
+RestartSec=40
+SyslogIdentifier=spbdotnet5
+User=spbdotnet5
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Reload SystemD and enable the service, so it will restart on reboots
+sudo systemctl daemon-reload
+sudo systemctl enable spbdotnet5
+
+# Stop service
+sudo systemctl stop spbdotnet5
+# Start service
+sudo systemctl start spbdotnet5
+# View service status
+sudo systemctl --no-pager status spbdotnet5
+
+esac
+
+exit 0

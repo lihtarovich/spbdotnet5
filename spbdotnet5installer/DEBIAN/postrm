@@ -1,0 +1,20 @@
+#!/bin/sh
+
+case "$1" in
+    remove | purge)
+
+sudo systemctl disable spbdotnet5.service
+
+if [ -f /lib/systemd/system/spbdotnet5.service ]; then
+	sudo rm -f /lib/systemd/system/spbdotnet5.service
+fi
+
+if [ -d /usr/bin/spbdotnet5.service ]; then
+	sudo rm -rf /usr/local/bin/spbdotnet5.service
+fi
+
+if [ -d /var/log/spbdotnet5 ]; then
+	sudo rm -rf /usr/local/bin/spbdotnet5.service
+fi
+
+esac

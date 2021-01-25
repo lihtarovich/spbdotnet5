@@ -1,0 +1,8 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+/SpbDotNetCore3/internal-nlog.log
+/Output
+/spbdotnet3installer/usr

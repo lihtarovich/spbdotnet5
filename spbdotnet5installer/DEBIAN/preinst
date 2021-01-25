@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ ! -d /usr/bin/spbdotnet5.service ]; then
+    sudo mkdir -p /usr/bin/spbdotnet5.service
+fi
+if [ ! -d /var/log/spbdotnet5 ]; then
+    sudo mkdir -p /var/log/spbdotnet5
+fi
