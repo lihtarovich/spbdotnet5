@@ -11,7 +11,7 @@ RUN apk update && apk upgrade && \
     
 # download project and restore as distinct layers
 RUN git clone https://github.com/lihtarovich/spbdotnet5 /source
-RUN dotnet restore -r linux-musl-x64
+RUN dotnet restore --runtime linux-musl-x64
 RUN dotnet publish --runtime linux-musl-x64 -c Release -o /usr/bin/spbdotnet5/ --self-contained true --no-restore -p:PublishTrimmed=True -p:PublishReadyToRun=true SpbDotNetCore5
 
 # final stage/image
@@ -26,7 +26,7 @@ COPY --from=build /usr/bin/spbdotnet5 ./
 
 RUN echo DBHOST: $dbhost, DBPORT: $dbport
 #RUN mkdir -p /usr/bin/spbdotnet5/
-RUN mkdir -p /var/log/spbdo
+RUN mkdir -p /var/log/spbdotnet5
 
 RUN sed -i "s/Host=localhost/Host='$dbhost'/" /usr/bin/spbdotnet5/appsettings.json \
         && sed -i "s/Port=5432/Port=$dbport/" /usr/bin/spbdotnet5/appsettings.json
@@ -35,8 +35,7 @@ RUN addgroup -g $UID spbdotnet5 \
         && adduser -G spbdotnet5 -u $UID spbdotnet5 -D \
         && chown -R spbdotnet5:spbdotnet5 /usr/bin/spbdotnet5/ \
         && chmod -R 500 /usr/bin/spbdotnet5/ \
-        && chown -R spbdotnet5:spbdotnet5 /var/log/spbdotnet5/ \
-        && chmod -R 777 /usr/bin/spbdotnet5/spbdotnet.pfx
+        && chown -R spbdotnet5:spbdotnet5 /var/log/spbdotnet5/
         
 USER spbdotnet5
 
@@ -50,6 +49,6 @@ USER spbdotnet5
 # Add VOLUMEs to allow logs
 #VOLUME  ["/var/log/spbdotnet5/"]
 
-EXPOSE 5003/tcp
+EXPOSE 5005/tcp
 
 ENTRYPOINT ["/usr/bin/spbdotnet5/SpbDotNetCore5"]
