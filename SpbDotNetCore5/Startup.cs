@@ -15,11 +15,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using NLog.Extensions.Logging;
 
 namespace SpbDotNetCore5
 {
     public class Startup
     {
+        private static readonly LoggerFactory NLogLoggerFactory = new LoggerFactory(new[] {new NLogLoggerProvider()});
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,9 +33,12 @@ namespace SpbDotNetCore5
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(options => options.Filters.Add(new ExceptionHandlerAttribute()));
-            
+
             services.AddDbContext<UserContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
+                options.UseLoggerFactory(NLogLoggerFactory);
+            });
 
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             

@@ -4,9 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using DataAccessLayer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,16 +26,22 @@ namespace SpbDotNetCore5
             Logger logger = null;
             try
             {
+                if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") is Object)
+                {
+                    //here is docker-specific
+                }
+                
                 String logConfigFile = "nlog.config";
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     logConfigFile = "nlog.development.config";
             
-                logger = NLog.Web.NLogBuilder.ConfigureNLog(logConfigFile).GetCurrentClassLogger();
+                String workingDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                var logPath = Path.Combine(workingDirectory, logConfigFile);
+                logger = NLog.Web.NLogBuilder.ConfigureNLog(logPath).GetCurrentClassLogger();
                 
                 logger.Info("Starting service...");
-                
+                logger.Info($"Working directory is {workingDirectory}");
                 logger.Info("Loading configuration...");
-                String workingDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 var configBuilder = new ConfigurationBuilder()
                     .SetBasePath(workingDirectory)
                     .AddJsonFile("appsettings.json", false, true);
@@ -44,7 +52,7 @@ namespace SpbDotNetCore5
                 updater.CheckForUpdate();
                 
                 logger.Info("Starting web host...");
-                CreateHostBuilder(args, config).Build().Run();
+                CreateHostBuilder(args, config, workingDirectory).Build().Run();
             }
             catch (Exception e)
             {
@@ -57,11 +65,12 @@ namespace SpbDotNetCore5
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args, IConfiguration config) =>
+        public static IHostBuilder CreateHostBuilder(string[] args, IConfiguration config, String workingDir) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { 
                     webBuilder.UseConfiguration(config);
                     webBuilder.UseStartup<Startup>();
+                    webBuilder.UseKestrel(options =>  ConfigureEndpoints(config, options, workingDir));
                 })
                 .ConfigureLogging(logging =>
                 {
@@ -69,5 +78,14 @@ namespace SpbDotNetCore5
                     logging.SetMinimumLevel(LogLevel.Trace);
                 })
                 .UseNLog();
+        
+        public static void ConfigureEndpoints(IConfiguration configuration, KestrelServerOptions options, String workingDir)
+        {
+            var certPassword = configuration?.GetSection("Kestrel:Certificates:Default")?["Password"]; 
+            var certPath = configuration?.GetSection("Kestrel:Certificates:Default")?["Path"];
+            var realPath = Path.Combine(workingDir, certPath);
+            var certificate = new X509Certificate2 ( realPath , certPassword );
+            options.ConfigureHttpsDefaults(options => options.ServerCertificate = certificate);
+        }
     }
 }
